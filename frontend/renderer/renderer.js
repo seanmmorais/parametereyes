@@ -19,6 +19,7 @@ log("renderer.js loaded");
 let THREE;
 let OrbitControls;
 let STLLoader;
+let threeReady = false;
 
 (async function bootstrapThree() {
   try {
@@ -26,15 +27,18 @@ let STLLoader;
     THREE = await import("../node_modules/three/build/three.module.js");
     ({ OrbitControls } = await import("../node_modules/three/examples/jsm/controls/OrbitControls.js"));
     ({ STLLoader } = await import("../node_modules/three/examples/jsm/loaders/STLLoader.js"));
+    threeReady = true;
     log("three.js bootstrapped OK");
-    main();
   } catch (e) {
     err("Failed to bootstrap three.js:", e);
+  } finally {
+    main({ threeReady });
   }
 })();
 
-function main() {
+function main(opts = {}) {
   (function () {
+    const { threeReady = false } = opts;
     const api =
       window.parametereyes || {
         appName: "Parametereyes",
@@ -251,9 +255,21 @@ function main() {
 
       let file = null;
 
-      log("Creating 3D viewer...");
-      let viewer = createViewer(viewerEl);
-      log("3D viewer created");
+      let viewer = null;
+      if (threeReady) {
+        try {
+          log("Creating 3D viewer...");
+          viewer = createViewer(viewerEl);
+          log("3D viewer created");
+        } catch (e) {
+          err("createViewer failed:", e);
+          viewerEl.innerHTML =
+            '<div class="pill">3D viewer failed to initialize.</div>';
+        }
+      } else {
+        viewerEl.innerHTML =
+          '<div class="pill">3D viewer unavailable (three.js failed to load).</div>';
+      }
 
       function setStatus(text) {
         statusPill.textContent = text;
@@ -326,9 +342,12 @@ function main() {
 
           const stlUrl = `${api.backendUrl}${json.stl_url}`;
           log("Loading STL from", stlUrl);
-          await viewer.loadStlFromUrl(stlUrl);
-
-          setStatus("Done");
+          if (viewer) {
+            await viewer.loadStlFromUrl(stlUrl);
+            setStatus("Done");
+          } else {
+            setStatus("Done (no viewer)");
+          }
         } catch (e) {
           setStatus("Error");
           showParams({ error: e && e.message ? e.message : String(e) });
@@ -338,9 +357,11 @@ function main() {
       });
 
       panel._dispose = () => {
-        try {
-          viewer.dispose();
-        } catch (_) {}
+        if (viewer) {
+          try {
+            viewer.dispose();
+          } catch (_) {}
+        }
         viewer = null;
       };
     }
