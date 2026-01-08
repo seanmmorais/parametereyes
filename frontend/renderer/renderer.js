@@ -222,10 +222,10 @@ function main(opts = {}) {
       log("renderEditGxb()");
       panel.innerHTML = `
       <h2>Edit GXB</h2>
-      <p>Select a <code>.gxb</code> file, then click <b>Process</b>. The backend returns JSON info for a parameter panel and an STL to preview.</p>
+      <p>Select a <code>.gxb or .gxf</code> file, then click <b>Process</b>. The backend returns JSON info for a parameter panel and an STL to preview.</p>
 
       <div class="row">
-        <input id="gxbFile" type="file" accept=".gxb" />
+        <input id="gxbFile" type="file" accept=".gxb, .gxf" />
         <button class="btn" id="processBtn" disabled>Process</button>
         <span class="pill" id="statusPill">Idle</span>
       </div>
@@ -235,7 +235,7 @@ function main(opts = {}) {
           <div class="kv" id="paramPanel">
             <div class="kv-item">
               <div class="k">Parameters</div>
-              <div class="v">Upload a .gxb to populate this panel.</div>
+              <div class="v">Upload a .gxb, .gxf to populate this panel.</div>
             </div>
           </div>
         </div>
