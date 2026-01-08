@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse
 
 from utils.stl import demo_cube_stl_ascii
@@ -139,6 +140,8 @@ def extract_gxb_info(glasses, filename) -> Dict[str, Any]:
         "csg_operations_info": csg_operations_info
     }
 
+    safe_info = jsonable_encoder(info, custom_encoder={np.ndarray: lambda a: a.tolist()})
+
     logger.debug(
         "extract_gxb_info complete: sliders=%d warpers=%d mirrors=%d scalers=%d refs=%d regions=%d params=%d benders=%d tri_cols=%d point_cols=%d csg_ops=%d",
         len(curve_sliders_info),
@@ -153,7 +156,7 @@ def extract_gxb_info(glasses, filename) -> Dict[str, Any]:
         len(point_collections_info),
         len(csg_operations_info),
     )
-    return info
+    return safe_info
 
 def decode_gxb_to_stl_bytes(glasses, header: bytes = b"numpy-stl") -> bytes:
     """TODO: Replace with real `.gxb` -> `.stl` conversion."""
