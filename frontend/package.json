@@ -1,0 +1,20 @@
+{
+  "name": "parametereyes-frontend",
+  "private": true,
+  "version": "0.2.0",
+  "main": "main.js",
+  "scripts": {
+    "dev": "concurrently -k -n BACKEND,ELECTRON -c auto \"npm run dev:backend\" \"npm run dev:electron\"",
+    "dev:backend": "python ../backend/server.py",
+    "dev:electron": "cross-env PARAMEYES_NO_BACKEND=1 electron .",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.0.0"
+  }
+}

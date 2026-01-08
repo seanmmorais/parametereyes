@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parametereyes</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 id="appName">Parametereyes</h1>
+          <p>Backend: <span class="pill" id="backendUrl">http://127.0.0.1:5123</span></p>
+        </div>
+
+        <nav class="nav">
+          <button data-tab="home" class="active">Home</button>
+          <button data-tab="edit-gxb">Edit GXB</button>
+          <button data-tab="tab-3">Tab 3</button>
+          <button data-tab="tab-4">Tab 4</button>
+          <button data-tab="tab-5">Tab 5</button>
+          <button data-tab="tab-6">Tab 6</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section class="card" id="panel"></section>
+      </main>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
