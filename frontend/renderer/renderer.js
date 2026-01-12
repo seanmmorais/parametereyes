@@ -289,20 +289,130 @@ function main(opts = {}) {
         return String(v);
       }
 
+      function numberStep(n) {
+        const abs = Math.abs(n);
+        if (abs === 0) return 0.1;
+        if (abs < 1) return 0.01;
+        if (abs < 10) return 0.1;
+        if (abs < 100) return 1;
+        if (abs < 1000) return 5;
+        return 10;
+      }
+
+      function numberRange(n) {
+        const abs = Math.abs(n);
+        const span = abs === 0 ? 1 : abs;
+        return { min: -span, max: span };
+      }
+
+      function renderNumberControl(label, value) {
+        const { min, max } = numberRange(value);
+        const step = numberStep(value);
+        const safeLabel = escapeHtml(label);
+        const safeVal = escapeHtml(String(value));
+        return `
+          <div class="kv-item">
+            <div class="k">${safeLabel}</div>
+            <div class="v">
+              <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" />
+              <input type="number" value="${safeVal}" step="${step}" />
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTextControl(label, value) {
+        const safeLabel = escapeHtml(label);
+        const safeVal = escapeHtml(value == null ? "" : String(value));
+        return `
+          <div class="kv-item">
+            <div class="k">${safeLabel}</div>
+            <div class="v">
+              <input type="text" value="${safeVal}" placeholder="Enter text..." />
+            </div>
+          </div>
+        `;
+      }
+
+      function isCoordinateTriplet(v) {
+        return (
+          Array.isArray(v) &&
+          v.length === 3 &&
+          v.every((item) => typeof item === "number" && !Number.isNaN(item))
+        );
+      }
+
+      function renderArrayItemControls(entryKey, arr) {
+        const rows = [];
+        arr.forEach((item, idx) => {
+          const labelBase = `${entryKey} item ${idx}`;
+          if (isCoordinateTriplet(item)) {
+            rows.push(renderNumberControl(`${labelBase} (x)`, item[0]));
+            rows.push(renderNumberControl(`${labelBase} (y)`, item[1]));
+            rows.push(renderNumberControl(`${labelBase} (z)`, item[2]));
+          } else if (typeof item === "number" && !Number.isNaN(item)) {
+            rows.push(renderNumberControl(labelBase, item));
+          } else if (typeof item === "string" || item == null) {
+            rows.push(renderTextControl(labelBase, item));
+          } else {
+            rows.push(`
+              <div class="kv-item">
+                <div class="k">${escapeHtml(labelBase)}</div>
+                <div class="v"><pre style="margin:0;white-space:pre-wrap;background:transparent;border:0;padding:0;color:inherit;">${escapeHtml(
+                  formatValue(item)
+                )}</pre></div>
+              </div>
+            `);
+          }
+        });
+        return rows.join("");
+      }
+
       function showParams(info) {
         const rows = [];
         Object.entries(info || {}).forEach(([k, v]) => {
-          let displayValue = v;
-          if (k === "curve_sliders_info" && v && typeof v === "object") {
+          if (v && typeof v === "object" && !Array.isArray(v)) {
             const entries = Object.entries(v);
-            if (entries.length > 0) {
-              const [firstKey, firstVal] = entries.sort((a, b) =>
-                String(a[0]).localeCompare(String(b[0]))
-              )[0];
-              displayValue = { [firstKey]: firstVal };
+            const targetEntries =
+              k === "curve_sliders_info" && entries.length > 0
+                ? [entries.sort((a, b) => String(a[0]).localeCompare(String(b[0])))[0]]
+                : entries;
+
+            if (targetEntries.length === 0) {
+              rows.push(`
+              <div class="kv-item">
+                <div class="k">${escapeHtml(k)}</div>
+                <div class="v">(none)</div>
+              </div>
+            `);
+              return;
             }
+
+            targetEntries.forEach(([entryKey, entryVal]) => {
+              const entryLabel = `${k} ${entryKey}`;
+              if (Array.isArray(entryVal)) {
+                rows.push(`
+                <div class="kv-item">
+                  <div class="k">${escapeHtml(entryLabel)}</div>
+                  <div class="v"></div>
+                </div>
+              `);
+                rows.push(renderArrayItemControls(entryLabel, entryVal));
+              } else {
+                rows.push(`
+                <div class="kv-item">
+                  <div class="k">${escapeHtml(entryLabel)}</div>
+                  <div class="v"><pre style="margin:0;white-space:pre-wrap;background:transparent;border:0;padding:0;color:inherit;">${escapeHtml(
+                    formatValue(entryVal)
+                  )}</pre></div>
+                </div>
+              `);
+              }
+            });
+            return;
           }
-          const val = formatValue(displayValue);
+
+          const val = formatValue(v);
           rows.push(`
           <div class="kv-item">
             <div class="k">${escapeHtml(k)}</div>
