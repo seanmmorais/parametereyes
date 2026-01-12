@@ -275,14 +275,24 @@ function main(opts = {}) {
         statusPill.textContent = text;
       }
 
+      function formatValue(v) {
+        if (v == null) return "";
+        if (Array.isArray(v)) {
+          const allPrimitive = v.every(
+            (item) => item == null || typeof item !== "object"
+          );
+          return allPrimitive ? v.join("\n") : JSON.stringify(v, null, 2);
+        }
+        if (typeof v === "object") {
+          return JSON.stringify(v, null, 2);
+        }
+        return String(v);
+      }
+
       function showParams(info) {
         const rows = [];
         Object.entries(info || {}).forEach(([k, v]) => {
-          const val = Array.isArray(v)
-            ? v.join("\n")
-            : v == null
-            ? ""
-            : String(v);
+          const val = formatValue(v);
           rows.push(`
           <div class="kv-item">
             <div class="k">${escapeHtml(k)}</div>
