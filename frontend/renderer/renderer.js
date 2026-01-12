@@ -292,7 +292,17 @@ function main(opts = {}) {
       function showParams(info) {
         const rows = [];
         Object.entries(info || {}).forEach(([k, v]) => {
-          const val = formatValue(v);
+          let displayValue = v;
+          if (k === "curve_sliders_info" && v && typeof v === "object") {
+            const entries = Object.entries(v);
+            if (entries.length > 0) {
+              const [firstKey, firstVal] = entries.sort((a, b) =>
+                String(a[0]).localeCompare(String(b[0]))
+              )[0];
+              displayValue = { [firstKey]: firstVal };
+            }
+          }
+          const val = formatValue(displayValue);
           rows.push(`
           <div class="kv-item">
             <div class="k">${escapeHtml(k)}</div>
