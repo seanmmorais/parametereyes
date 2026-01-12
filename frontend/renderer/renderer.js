@@ -342,8 +342,30 @@ function main(opts = {}) {
         );
       }
 
+      function isCoordinateList(v) {
+        return (
+          Array.isArray(v) &&
+          v.length > 0 &&
+          v.every((item) => isCoordinateTriplet(item))
+        );
+      }
+
       function renderArrayItemControls(entryKey, arr) {
         const rows = [];
+        if (isCoordinateList(arr)) {
+          rows.push(`
+            <div class="kv-item">
+              <div class="k">${escapeHtml(`${entryKey} preview`)}</div>
+              <div class="v">
+                <label>
+                  <input type="checkbox" />
+                  Preview coordinates
+                </label>
+              </div>
+            </div>
+          `);
+          return rows.join("");
+        }
         arr.forEach((item, idx) => {
           const labelBase = `${entryKey} item ${idx}`;
           if (isCoordinateTriplet(item)) {
